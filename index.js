@@ -6,20 +6,13 @@ require('dotenv').config();
 
 const   scopes = ["channel:manage:redemptions", "channel:read:goals"];
 const   auth_url = `https://id.twitch.tv/oauth2/authorize?client_id=${process.env["TWITCH_ID"]}&redirect_uri=http://localhost:3000&response_type=code&scope=${encodeURI(scopes.join(" "))}`;
-const   app_token = fs.readFileSync("./.token");
+const   app_token = "";
+const   WebSocket = require('ws');
+const   ws = new WebSocket("wss://eventsub.wss.twitch.tv/ws");
 
-// axios.post('https://id.twitch.tv/oauth2/token', {
-//     data:
-//     {
-//         client_id: process.env['TWITCH_ID'],
-//         client_secret: process.env['TWITCH_SECRET'],
-//         grant_type: 'client_credentials',
-//     },
-// }).then((res) => {
-//     console.log(res);
-// }).catch((error) => {
-//     console.error(error);
-// })
+ws.on('open', (data) => {
+    console.log(data);
+})
 
 async function refresh_token(token) {
     return new Promise((resolve, reject) => {
