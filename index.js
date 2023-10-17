@@ -4,25 +4,28 @@ const   app = express();
 const   fs = require('fs');
 require('dotenv').config();
 
-const   scopes = ["channel:manage:redemptions", "channel:read:goals"];
+const   scopes = ["channel:manage:redemptions", "channel:read:goals", "moderator:read:followers"];
 const   auth_url = `https://id.twitch.tv/oauth2/authorize?client_id=${process.env["TWITCH_ID"]}&redirect_uri=http://localhost:3000&response_type=code&scope=${encodeURI(scopes.join(" "))}`;
 let     app_token;
+let     twitch_message_id;
 const   WebSocket = require('ws');
 const   ws = new WebSocket("wss://eventsub.wss.twitch.tv/ws");
 
-ws.on('open', (data) => {
-    // console.log(data);
-})
+// ws.on('open', (data) => {
+//     console.log(data);
+// })
 
 ws.on('message', (msg) => {
     const   parsed_msg = JSON.parse(msg);
-    console.log("Message: " + parsed_msg.metadata.message_id);
+    console.log("Message: " + parsed_msg.payload.session.id);
+    twitch_message_id = parsed_msg.payload.session.id;
 })
 
 // Need to get the broadcaster id
 
 async function  subscribe_to_event(id) {
     return new Promise((resolve, reject) => {
+        console.log(id);
         axios({
             method: "POST",
             url: "https://api.twitch.tv/helix/eventsub/subscriptions",
@@ -34,8 +37,8 @@ async function  subscribe_to_event(id) {
             data: {
                 "type": "channel.follow",
                 "version": "2",
-                "condition": {"user_id": id},
-                // "transport": {"method": "websocket", "session_id": }
+                "condition": {"broadcaster_user_id": id, "moderator_user_id": id},
+                "transport": {"method": "websocket", "session_id": twitch_message_id}
             }
         }).then((data) => {
             console.log(JSON.stringify(data.data));
@@ -97,8 +100,10 @@ app.get('/', (req, res) => {
         res.send('ok');
         fs.writeFileSync('./.token.json', JSON.stringify(data.data), {encoding: 'utf-8'});
         app_token = data.data;
-        const user = get_user();
-        subscribe_to_event(user.id);
+        get_user().then((user) => {
+            console.log(user.data[0].id);
+            subscribe_to_event(user.data[0].id);
+        })
     }).catch((error) => {
         console.log(error);
         res.send("oops");
