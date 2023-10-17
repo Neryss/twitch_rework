@@ -9,8 +9,8 @@ const   auth_url = `https://id.twitch.tv/oauth2/authorize?client_id=${process.en
 let     app_token;
 let     twitch_message_id;
 const   WebSocket = require('ws');
-// const   ws = new WebSocket("wss://eventsub.wss.twitch.tv/ws");
-const   ws = new WebSocket("ws://localhost:8080/ws");
+const   ws = new WebSocket("wss://eventsub.wss.twitch.tv/ws");
+// const   ws = new WebSocket("ws://localhost:8080/ws");
 
 // ws.on('open', (data) => {
 //     console.log(data);
@@ -108,10 +108,6 @@ app.get('/', (req, res) => {
         res.send('ok');
         fs.writeFileSync('./.token.json', JSON.stringify(data.data), {encoding: 'utf-8'});
         app_token = data.data;
-        get_user().then((user) => {
-            console.log(user.data[0].id);
-            subscribe_to_event(user.data[0].id);
-        })
     }).catch((error) => {
         console.log(error);
         res.send("oops");
@@ -122,3 +118,14 @@ app.listen(3000, () =>{
     console.log(`server running on http://localhost:3000`);
     console.log(auth_url);
 })
+
+async function    main() {
+    console.log("fetching token from file...");
+    // app_token = fs.readFileSync('./.token.json');
+    app_token = JSON.parse(await fs.promises.readFile("./.token.json"));
+    console.log("Token: " + app_token);
+    const   user = await get_user();
+    subscribe_to_event(user.data[0].id);
+}
+
+main();
