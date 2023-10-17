@@ -9,16 +9,24 @@ const   auth_url = `https://id.twitch.tv/oauth2/authorize?client_id=${process.en
 let     app_token;
 let     twitch_message_id;
 const   WebSocket = require('ws');
-const   ws = new WebSocket("wss://eventsub.wss.twitch.tv/ws");
+// const   ws = new WebSocket("wss://eventsub.wss.twitch.tv/ws");
+const   ws = new WebSocket("ws://localhost:8080/ws");
 
 // ws.on('open', (data) => {
 //     console.log(data);
 // })
 
+let   init = true;
+
 ws.on('message', (msg) => {
     const   parsed_msg = JSON.parse(msg);
-    console.log("Message: " + parsed_msg.payload.session.id);
-    twitch_message_id = parsed_msg.payload.session.id;
+    console.log("Raw message: " + msg);
+    if (init)
+    {
+        console.log("Message: " + parsed_msg.payload.session.id);
+        twitch_message_id = parsed_msg.payload.session.id;
+        init = false;
+    }
 })
 
 // Need to get the broadcaster id
