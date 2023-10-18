@@ -17,10 +17,6 @@ cron.schedule('* */2 * * *', () => {
     refresh_token(app_token);
 });
 
-// ws.on('open', (data) => {
-//     console.log(data);
-// })
-
 let   init = true;
 
 ws.on('message', (msg) => {
@@ -111,7 +107,6 @@ app.get('/', (req, res) => {
         redirect_uri: "http://localhost:3000"
     }).then((data) => {
         res.send('ok');
-        // fs.writeFileSync('./.token.json', JSON.stringify(data.data), {encoding: 'utf-8'});
         app_token = data.data;
         main();
     }).catch((error) => {
@@ -131,11 +126,8 @@ async function    main() {
         });
     }, 5000);
     console.log("fetching token from file...");
-    // app_token = fs.readFileSync('./.token.json');
     app_token = JSON.parse(await fs.promises.readFile("./.token.json"));
     console.log("Token: " + app_token);
     const   user = await get_user();
     subscribe_to_event(user.data[0].id, "channel.follow");
 }
-
-// main();
