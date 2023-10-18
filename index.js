@@ -11,6 +11,11 @@ let     twitch_message_id;
 const   WebSocket = require('ws');
 const   ws = new WebSocket("wss://eventsub.wss.twitch.tv/ws");
 // const   ws = new WebSocket("ws://localhost:8080/ws");
+const   cron = require('node-cron');
+
+cron.schedule('* */2 * * *', () => {
+    refresh_token(app_token);
+});
 
 // ws.on('open', (data) => {
 //     console.log(data);
@@ -31,7 +36,7 @@ ws.on('message', (msg) => {
 
 // Need to get the broadcaster id
 
-async function  subscribe_to_event(id) {
+async function  subscribe_to_event(id, event) {
     return new Promise((resolve, reject) => {
         console.log(id);
         axios({
@@ -43,7 +48,7 @@ async function  subscribe_to_event(id) {
                 "Authorization": "Bearer " + app_token.access_token
             },
             data: {
-                "type": "channel.follow",
+                "type": event,
                 "version": "2",
                 "condition": {"broadcaster_user_id": id, "moderator_user_id": id},
                 "transport": {"method": "websocket", "session_id": twitch_message_id}
@@ -88,7 +93,7 @@ async function  refresh_token(token) {
             refresh_token: token.refresh_token
         }).then((data) => {
             console.log("token refreshed, writing to file");
-            fs.writeFileSync('./.token.json', JSON.stringify(data.data), {encoding: 'utf-8'});
+            // fs.writeFileSync('./.token.json', JSON.stringify(data.data), {encoding: 'utf-8'});
             resolve(data.data);
         }).catch((error) => {
             console.log(error);
@@ -106,26 +111,31 @@ app.get('/', (req, res) => {
         redirect_uri: "http://localhost:3000"
     }).then((data) => {
         res.send('ok');
-        fs.writeFileSync('./.token.json', JSON.stringify(data.data), {encoding: 'utf-8'});
+        // fs.writeFileSync('./.token.json', JSON.stringify(data.data), {encoding: 'utf-8'});
         app_token = data.data;
+        main();
     }).catch((error) => {
         console.log(error);
         res.send("oops");
     })
 })
 
-app.listen(3000, () =>{
-    console.log(`server running on http://localhost:3000`);
+var server = app.listen(3000, () =>{
     console.log(auth_url);
 })
 
 async function    main() {
+    setTimeout(() => {
+        server.close(() => {
+            console.log("Server closed");
+        });
+    }, 5000);
     console.log("fetching token from file...");
     // app_token = fs.readFileSync('./.token.json');
     app_token = JSON.parse(await fs.promises.readFile("./.token.json"));
     console.log("Token: " + app_token);
     const   user = await get_user();
-    subscribe_to_event(user.data[0].id);
+    subscribe_to_event(user.data[0].id, "channel.follow");
 }
 
-main();
+// main();
