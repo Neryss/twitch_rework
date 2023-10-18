@@ -9,8 +9,8 @@ const   auth_url = `https://id.twitch.tv/oauth2/authorize?client_id=${process.en
 let     app_token;
 let     twitch_message_id;
 const   WebSocket = require('ws');
-const   ws = new WebSocket("wss://eventsub.wss.twitch.tv/ws");
-// const   ws = new WebSocket("ws://localhost:8080/ws");
+// const   ws = new WebSocket("wss://eventsub.wss.twitch.tv/ws");
+const   ws = new WebSocket("ws://localhost:8080/ws");
 const   cron = require('node-cron');
 
 cron.schedule('* */2 * * *', () => {
@@ -53,7 +53,7 @@ async function  subscribe_to_event(id, event) {
             console.log(JSON.stringify(data.data));
             resolve(data.data);
         }).catch((error) => {
-            console.log(error);
+            console.log(error.response.data.message);
             reject(error);
         })
     })
@@ -73,8 +73,8 @@ async function  get_user() {
             console.log("User: " + JSON.stringify(data.data));
             resolve(data.data);
         }).catch((error) => {
-            console.log("Error: " + error);
-            reject(error);
+            console.log("Error: " + error.response.data.message);
+            reject(error.response.data.message);
         })
     })
 }
@@ -92,7 +92,7 @@ async function  refresh_token(token) {
             // fs.writeFileSync('./.token.json', JSON.stringify(data.data), {encoding: 'utf-8'});
             resolve(data.data);
         }).catch((error) => {
-            console.log(error);
+            console.log(error.response.data.message);
             reject(error);
         })
     })
@@ -110,7 +110,7 @@ app.get('/', (req, res) => {
         app_token = data.data;
         main();
     }).catch((error) => {
-        console.log(error);
+        console.log(error.response.data.message);
         res.send("oops");
     })
 })
@@ -125,8 +125,6 @@ async function    main() {
             console.log("Server closed");
         });
     }, 5000);
-    console.log("fetching token from file...");
-    app_token = JSON.parse(await fs.promises.readFile("./.token.json"));
     console.log("Token: " + app_token);
     const   user = await get_user();
     subscribe_to_event(user.data[0].id, "channel.follow");
