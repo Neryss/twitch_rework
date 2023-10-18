@@ -13,8 +13,9 @@ const   WebSocket = require('ws');
 const   ws = new WebSocket("ws://localhost:8080/ws");
 const   cron = require('node-cron');
 
-cron.schedule('* */2 * * *', () => {
-    refresh_token(app_token);
+cron.schedule('* * */2 * *', () => {
+    if (app_token)
+        refresh_token(app_token);
 });
 
 let   init = true;
@@ -28,13 +29,25 @@ ws.on('message', (msg) => {
         twitch_message_id = parsed_msg.payload.session.id;
         init = false;
     }
+    if (parsed_msg.payload.subscription)
+    {
+        if (parsed_msg.payload.subscription.type == "channel.follow")
+        {
+            console.log("\x1b[33m New follow! \x1b[0m");
+            console.log(parsed_msg.payload.event.user_login);
+        }
+        if (parsed_msg.payload.subscription.type == "stream.online")
+        {
+            console.log("\x1b[33m Stream Online \x1b[0m");
+        }
+    }
 })
 
 // Need to get the broadcaster id
 
-async function  subscribe_to_event(id, event) {
+async function  subscribe_to_event(id, event, version) {
     return new Promise((resolve, reject) => {
-        console.log(id);
+        console.log("Session id: " + twitch_message_id);
         axios({
             method: "POST",
             url: "https://api.twitch.tv/helix/eventsub/subscriptions",
@@ -45,7 +58,7 @@ async function  subscribe_to_event(id, event) {
             },
             data: {
                 "type": event,
-                "version": "2",
+                "version": version,
                 "condition": {"broadcaster_user_id": id, "moderator_user_id": id},
                 "transport": {"method": "websocket", "session_id": twitch_message_id}
             }
@@ -127,5 +140,7 @@ async function    main() {
     }, 5000);
     console.log("Token: " + app_token);
     const   user = await get_user();
-    subscribe_to_event(user.data[0].id, "channel.follow");
+    await   subscribe_to_event(user.data[0].id, "channel.follow", "2");
+    await   subscribe_to_event(user.data[0].id, "stream.online", "1");
+    await   subscribe_to_event(user.data[0].id, "stream.subscribe", "1");
 }
