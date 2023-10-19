@@ -47,6 +47,24 @@ module.exports = {
             })
         })
     },
+    getChannel: (app_token, channel_id) => {
+        return new Promise((resolve, reject) => {
+            axios({
+                method: "GET",
+                url: `https://api.twitch.tv/helix/channels?broadcaster_id=${channel_id}`,
+                headers: {
+                    Authorization: "Bearer " + app_token.access_token,
+                    "Client-Id": process.env["TWITCH_ID"]
+                }
+            }).then((data) => {
+                console.log(data.data.data);
+                resolve(data.data.data);
+            }).catch((error) => {
+                console.error(error.response.data.message);
+                reject(error.response.data.message);
+            })
+        })
+    },
     refresh_token: (token) => {
         return new Promise((resolve, reject) => {
             console.log("refreshing token...");

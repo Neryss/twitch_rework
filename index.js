@@ -9,8 +9,8 @@ const   auth_url = `https://id.twitch.tv/oauth2/authorize?client_id=${process.en
 let     app_token;
 let     twitch_message_id;
 const   WebSocket = require('ws');
-// const   ws = new WebSocket("wss://eventsub.wss.twitch.tv/ws");
-const   ws = new WebSocket("ws://localhost:8080/ws");
+const   ws = new WebSocket("wss://eventsub.wss.twitch.tv/ws");
+// const   ws = new WebSocket("ws://localhost:8080/ws");
 const   cron = require('node-cron');
 const   twitch_ft = require('./srcs/twitch');
 
@@ -23,7 +23,7 @@ let   init = true;
 
 ws.on('message', (msg) => {
     const   parsed_msg = JSON.parse(msg);
-    console.log("Raw message: " + msg);
+    // console.log("Raw message: " + msg);
     if (init)
     {
         console.log("Message: " + parsed_msg.payload.session.id);
@@ -79,7 +79,11 @@ async function    main() {
     }, 5000);
     console.log("Token: " + app_token);
     const   user = await twitch_ft.get_user(app_token);
+    console.log(user);
     await   twitch_ft.subscribe_to_event(user.data[0].id, "channel.follow", "2", twitch_message_id, app_token);
     await   twitch_ft.subscribe_to_event(user.data[0].id, "stream.online", "1", twitch_message_id, app_token);
+    const   channel = await twitch_ft.getChannel(app_token,user.data[0].id);
+    console.log(channel[0].broadcaster_name);
+    await   require('./srcs/discord').sendNotif(channel[0], user.data[0]);
     // await   subscribe_to_event(user.data[0].id, "stream.subscribe", "1");
 }
