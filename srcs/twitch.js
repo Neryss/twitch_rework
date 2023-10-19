@@ -28,6 +28,32 @@ module.exports = {
             })
         })
     },
+    test: (id, event, version, twitch_message_id, app_token) => {
+        return new Promise((resolve, reject) => {
+            console.log("Session id: " + twitch_message_id);
+            axios({
+                method: "POST",
+                url: "https://api.twitch.tv/helix/eventsub/subscriptions",
+                headers: {
+                    "Client-Id": process.env["TWITCH_ID"],
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + app_token.access_token
+                },
+                data: {
+                    "type": event,
+                    "version": version,
+                    "condition": {"broadcaster_user_id": id},
+                    "transport": {"method": "websocket", "session_id": twitch_message_id}
+                }
+            }).then((data) => {
+                console.log(JSON.stringify(data.data));
+                resolve(data.data);
+            }).catch((error) => {
+                console.log(error.response.data.message);
+                reject(error);
+            })
+        })
+    },
     get_user: (app_token) => {
         return new Promise((resolve, reject) => {
             axios({

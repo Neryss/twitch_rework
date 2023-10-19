@@ -21,6 +21,7 @@ cron.schedule('* * */2 * *', () => {
 
 let   init = true;
 
+//  this one is for twitch legit websocket server
 ws1.on('message', (msg) => {
     const   parsed_msg = JSON.parse(msg);
     // console.log("Raw message: " + msg);
@@ -30,8 +31,22 @@ ws1.on('message', (msg) => {
         twitch_message_id = parsed_msg.payload.session.id;
         init = false;
     }
-    // if (parsed_msg.payload.subscription)
-    // {
+    if (parsed_msg.payload.subscription)
+    {
+        if (parsed_msg.payload.subscription.type == "channel.channel_points_custom_reward_redemption.add")
+        {
+            console.log("EVENT!!!");
+            const   event = parsed_msg.payload.event;
+            const   reward_obj = {
+                user_name: event.user_name,
+                title: event.reward.title
+            }
+            console.log(event);
+            switch (event.reward.title) {
+                case "test":
+                    console.log(reward_obj);
+            }
+        }
     //     if (parsed_msg.payload.subscription.type == "channel.follow")
     //     {
     //         console.log("\x1b[33m New follow! \x1b[0m");
@@ -43,12 +58,13 @@ ws1.on('message', (msg) => {
     //         require('./srcs/discord').sendNotif(global_user.data[0], app_token);
     //         // console.log(stream_on);
     //     }
-    // }
+    }
 })
 
+// this one is for the CLI websocket client
 ws.on('message', (msg) => {
     const   parsed_msg = JSON.parse(msg);
-    // console.log("Raw message: " + msg);
+    console.log("Raw message: " + msg);
     // if (init)
     // {
     //     console.log("Message: " + parsed_msg.payload.session.id);
@@ -67,10 +83,22 @@ ws.on('message', (msg) => {
             console.log("\x1b[33m Stream Online \x1b[0m");
             require('./srcs/discord').sendNotif(global_user.data[0], app_token);
         }
+        if (parsed_msg.payload.subscription.type == "channel.channel_points_custom_reward_redemption.add")
+        {
+            console.log("EVENT!!!");
+            const   event = parsed_msg.payload.event;
+            const   reward_obj = {
+                user_name: event.user_name,
+                title: event.reward.title
+            }
+            console.log(event);
+            switch (event.reward.title) {
+                case "test":
+                    console.log(reward_obj);
+            }
+        }
     }
 })
-
-// Need to get the broadcaster id
 
 app.get('/', (req, res) => {
     axios.post("https://id.twitch.tv/oauth2/token", {
@@ -106,4 +134,5 @@ async function    main() {
     await   twitch_ft.subscribe_to_event(user.data[0].id, "channel.follow", "2", twitch_message_id, app_token);
     await   twitch_ft.subscribe_to_event(user.data[0].id, "stream.online", "1", twitch_message_id, app_token);
     // await   twitch_ft.createCustomReward(user.data[0].id, app_token, "test", 50);
+    await   twitch_ft.test(user.data[0].id, "channel.channel_points_custom_reward_redemption.add", "1", twitch_message_id, app_token);
 }
