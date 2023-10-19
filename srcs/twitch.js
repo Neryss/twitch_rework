@@ -81,5 +81,25 @@ module.exports = {
                 reject(error);
             })
         })
+    },
+    createCustomReward: (channel_id, app_token, title, cost) => {
+        return new Promise((resolve, reject) => {
+            axios({
+                method: "POST",
+                url: `https://api.twitch.tv/helix/channel_points/custom_rewards?broadcaster_id=${channel_id}`,
+                headers: {
+                    Authorization: "Bearer " + app_token.access_token,
+                    "Client-Id": process.env["TWITCH_ID"],
+                },
+                data: {
+                    "title": title,
+                    "cost": cost
+                }
+            }).then((data) => {
+                resolve(data.data);
+            }).catch((error) => {
+                reject(error);
+            })
+        })
     }
 }

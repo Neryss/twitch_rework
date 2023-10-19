@@ -9,8 +9,8 @@ const   auth_url = `https://id.twitch.tv/oauth2/authorize?client_id=${process.en
 let     app_token;
 let     twitch_message_id;
 const   WebSocket = require('ws');
-const   ws = new WebSocket("wss://eventsub.wss.twitch.tv/ws");
-// const   ws = new WebSocket("ws://localhost:8080/ws");
+const   ws1 = new WebSocket("wss://eventsub.wss.twitch.tv/ws");
+const   ws = new WebSocket("ws://localhost:8080/ws");
 const   cron = require('node-cron');
 const   twitch_ft = require('./srcs/twitch');
 
@@ -21,7 +21,7 @@ cron.schedule('* * */2 * *', () => {
 
 let   init = true;
 
-ws.on('message', (msg) => {
+ws1.on('message', (msg) => {
     const   parsed_msg = JSON.parse(msg);
     // console.log("Raw message: " + msg);
     if (init)
@@ -30,6 +30,31 @@ ws.on('message', (msg) => {
         twitch_message_id = parsed_msg.payload.session.id;
         init = false;
     }
+    // if (parsed_msg.payload.subscription)
+    // {
+    //     if (parsed_msg.payload.subscription.type == "channel.follow")
+    //     {
+    //         console.log("\x1b[33m New follow! \x1b[0m");
+    //         console.log(parsed_msg.payload.event.user_login);
+    //     }
+    //     if (parsed_msg.payload.subscription.type == "stream.online")
+    //     {
+    //         console.log("\x1b[33m Stream Online \x1b[0m");
+    //         require('./srcs/discord').sendNotif(global_user.data[0], app_token);
+    //         // console.log(stream_on);
+    //     }
+    // }
+})
+
+ws.on('message', (msg) => {
+    const   parsed_msg = JSON.parse(msg);
+    // console.log("Raw message: " + msg);
+    // if (init)
+    // {
+    //     console.log("Message: " + parsed_msg.payload.session.id);
+    //     twitch_message_id = parsed_msg.payload.session.id;
+    //     init = false;
+    // }
     if (parsed_msg.payload.subscription)
     {
         if (parsed_msg.payload.subscription.type == "channel.follow")
@@ -40,10 +65,7 @@ ws.on('message', (msg) => {
         if (parsed_msg.payload.subscription.type == "stream.online")
         {
             console.log("\x1b[33m Stream Online \x1b[0m");
-            let stream_on = {
-                user_name: parsed_msg.payload.event.broadcaster_user_name
-            }
-            console.log(stream_on);
+            require('./srcs/discord').sendNotif(global_user.data[0], app_token);
         }
     }
 })
@@ -71,19 +93,17 @@ var server = app.listen(3000, () =>{
     console.log(auth_url);
 })
 
+let global_user;
+
 async function    main() {
     setTimeout(() => {
         server.close(() => {
             console.log("Server closed");
         });
     }, 5000);
-    console.log("Token: " + app_token);
     const   user = await twitch_ft.get_user(app_token);
-    console.log(user);
+    global_user = user;
     await   twitch_ft.subscribe_to_event(user.data[0].id, "channel.follow", "2", twitch_message_id, app_token);
     await   twitch_ft.subscribe_to_event(user.data[0].id, "stream.online", "1", twitch_message_id, app_token);
-    const   channel = await twitch_ft.getChannel(app_token,user.data[0].id);
-    console.log(channel[0].broadcaster_name);
-    await   require('./srcs/discord').sendNotif(channel[0], user.data[0]);
-    // await   subscribe_to_event(user.data[0].id, "stream.subscribe", "1");
+    // await   twitch_ft.createCustomReward(user.data[0].id, app_token, "test", 50);
 }
