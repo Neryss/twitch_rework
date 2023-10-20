@@ -16,6 +16,7 @@ module.exports = {
             .setThumbnail(user.profile_image_url)
             .setDescription(`${channel[0].broadcaster_name} est en live sur ${channel[0].game_name}!`)
             .setTimestamp(Date.now());
+            require('fs').writeFileSync('./game.txt', channel[0].game_name);
             await webhook.send({embeds: [embed]});
             await webhook.send(`<@&${process.env["DISCORD_ROLE"]}>`);
             // resolve();

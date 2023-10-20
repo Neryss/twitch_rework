@@ -16,7 +16,7 @@ const   twitch_ft = require('./srcs/twitch');
 
 cron.schedule('* * */2 * *', () => {
     if (app_token)
-        twitch_ft.refresh_token(app_token);
+    twitch_ft.refresh_token(app_token);
 });
 
 let   init = true;
@@ -24,7 +24,7 @@ let   init = true;
 //  this one is for twitch legit websocket server
 ws1.on('message', (msg) => {
     const   parsed_msg = JSON.parse(msg);
-    // console.log("Raw message: " + msg);
+    console.log("Raw message: " + msg);
     if (init)
     {
         console.log("Message: " + parsed_msg.payload.session.id);
@@ -47,11 +47,22 @@ ws1.on('message', (msg) => {
                     console.log(reward_obj);
             }
         }
-    //     if (parsed_msg.payload.subscription.type == "channel.follow")
-    //     {
-    //         console.log("\x1b[33m New follow! \x1b[0m");
-    //         console.log(parsed_msg.payload.event.user_login);
-    //     }
+        else if (parsed_msg.payload.subscription.type == "channel.update")
+        {
+            console.log("CHANNEL UPDATE");
+            const   event = parsed_msg.payload.event;
+            const   update_info = {
+                title: event.title,
+                game: event.category_name
+            }
+            fs.writeFileSync('./game.txt', update_info.game);
+            console.log(update_info);
+        }
+        else if (parsed_msg.payload.subscription.type == "channel.follow")
+        {
+            console.log("\x1b[33m New follow! \x1b[0m");
+            console.log(parsed_msg.payload.event.user_login);
+        }
     //     if (parsed_msg.payload.subscription.type == "stream.online")
     //     {
     //         console.log("\x1b[33m Stream Online \x1b[0m");
@@ -64,7 +75,7 @@ ws1.on('message', (msg) => {
 // this one is for the CLI websocket client
 ws.on('message', (msg) => {
     const   parsed_msg = JSON.parse(msg);
-    console.log("Raw message: " + msg);
+    // console.log("Raw message: " + msg);
     // if (init)
     // {
     //     console.log("Message: " + parsed_msg.payload.session.id);
@@ -73,29 +84,15 @@ ws.on('message', (msg) => {
     // }
     if (parsed_msg.payload.subscription)
     {
-        if (parsed_msg.payload.subscription.type == "channel.follow")
-        {
-            console.log("\x1b[33m New follow! \x1b[0m");
-            console.log(parsed_msg.payload.event.user_login);
-        }
+        // if (parsed_msg.payload.subscription.type == "channel.follow")
+        // {
+        //     console.log("\x1b[33m New follow! \x1b[0m");
+        //     console.log(parsed_msg.payload.event.user_login);
+        // }
         if (parsed_msg.payload.subscription.type == "stream.online")
         {
             console.log("\x1b[33m Stream Online \x1b[0m");
             require('./srcs/discord').sendNotif(global_user.data[0], app_token);
-        }
-        if (parsed_msg.payload.subscription.type == "channel.channel_points_custom_reward_redemption.add")
-        {
-            console.log("EVENT!!!");
-            const   event = parsed_msg.payload.event;
-            const   reward_obj = {
-                user_name: event.user_name,
-                title: event.reward.title
-            }
-            console.log(event);
-            switch (event.reward.title) {
-                case "test":
-                    console.log(reward_obj);
-            }
         }
     }
 })
@@ -132,6 +129,7 @@ async function    main() {
     const   user = await twitch_ft.get_user(app_token);
     global_user = user;
     await   twitch_ft.subscribe_to_event(user.data[0].id, "channel.follow", "2", twitch_message_id, app_token);
+    await   twitch_ft.test(user.data[0].id, "channel.update", "2", twitch_message_id, app_token);
     await   twitch_ft.subscribe_to_event(user.data[0].id, "stream.online", "1", twitch_message_id, app_token);
     // await   twitch_ft.createCustomReward(user.data[0].id, app_token, "test", 50);
     await   twitch_ft.test(user.data[0].id, "channel.channel_points_custom_reward_redemption.add", "1", twitch_message_id, app_token);
