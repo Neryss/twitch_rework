@@ -45,6 +45,7 @@ ws1.on('message', (msg) => {
             switch (event.reward.title) {
                 case "test":
                     console.log(reward_obj);
+                    require('./srcs/rewards').sendReward('alt_tab');
             }
         }
         else if (parsed_msg.payload.subscription.type == "channel.update")

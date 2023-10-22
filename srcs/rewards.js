@@ -1,8 +1,19 @@
-const {keyboard, Key} = require('@nut-tree/nut-js');
+const   axios = require('axios').default;
 
 module.exports = {
-    keyboardTest: async () => {
-        await keyboard.type("super");
-        console.log("input done");
+    sendReward: (reward) => {
+        return new Promise((resolve, reject) => {
+            axios({
+                method: "POST",
+                url: "http://192.168.1.82:3033/example",
+                data: {
+                    field: "alt_tab"
+                }
+            }).then((res) => {
+                console.log(reward + " event sent")
+            }).catch((error) => {
+                console.log("ERROR: " + error);
+            })
+        })
     }
 }
