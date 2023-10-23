@@ -11,8 +11,10 @@ module.exports = {
                 }
             }).then((res) => {
                 console.log(reward + " event sent")
+                resolve();
             }).catch((error) => {
                 console.log("ERROR: " + error);
+                reject();
             })
         })
     }

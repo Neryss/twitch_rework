@@ -13,6 +13,7 @@ const   ws1 = new WebSocket("wss://eventsub.wss.twitch.tv/ws");
 const   ws = new WebSocket("ws://localhost:8080/ws");
 const   cron = require('node-cron');
 const   twitch_ft = require('./srcs/twitch');
+const   chat_bot = require('./chat_bot');
 
 cron.schedule('* * */2 * *', () => {
     if (app_token)
@@ -45,7 +46,9 @@ ws1.on('message', (msg) => {
             switch (event.reward.title) {
                 case "test":
                     console.log(reward_obj);
-                    require('./srcs/rewards').sendReward('alt_tab');
+                    require('./srcs/rewards').sendReward('alt_tab').then(() => {
+                        chat_bot.say(`${reward_obj.user_name} has redeemed ${reward_obj.title}`);
+                    })
             }
         }
         else if (parsed_msg.payload.subscription.type == "channel.update")
@@ -132,6 +135,7 @@ async function    main() {
     await   twitch_ft.subscribe_to_event(user.data[0].id, "channel.follow", "2", twitch_message_id, app_token);
     await   twitch_ft.test(user.data[0].id, "channel.update", "2", twitch_message_id, app_token);
     await   twitch_ft.subscribe_to_event(user.data[0].id, "stream.online", "1", twitch_message_id, app_token);
-    // await   twitch_ft.createCustomReward(user.data[0].id, app_token, "test", 50);
+    // await   twitch_ft.createCustomReward(user.data[0].id, app_token, "drop", 50);
     await   twitch_ft.test(user.data[0].id, "channel.channel_points_custom_reward_redemption.add", "1", twitch_message_id, app_token);
+    await   chat_bot.setup();
 }
