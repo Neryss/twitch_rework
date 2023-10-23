@@ -25,9 +25,8 @@ module.exports = {
 		parse = 1;
 		tested = [];
 		return new Promise(async (resolve) => {
-			fs.readFile("./resources/nox.json", 'utf-8', async function getPic(err, data) {
+			fs.readFile("./resources/nox.json", 'utf8', async function getPic(err, data) {
 				try {
-					console.log(JSON.parse(data));
 					if (parse)
 						var data = JSON.parse(data);
 					selected = data[[Math.floor(Math.random() * (Object.keys(data).length))]]
@@ -37,14 +36,12 @@ module.exports = {
 						stats = await countStats(data);
 						// await require("../chat_bot").say(`Une photo de Nox a été claim par ${user_name}, disponible sur le Discord: discord.neryss.pw`);
 
-						const attachment = new AttachmentBuilder(`./resources/photos/${selected.name}`, 'pic.png');
-						// const webhook = new discord.WebhookClient({ url: process.env["DISCORD_WEBHOOK_NOX"] });
-						// let embed = new discord.MessageEmbed();
-						const   embed = new EmbedBuilder();
-						embed.setColor("PURPLE");
+						const attachment = new AttachmentBuilder(`./resources/photos/${selected.name}`);
+						const   embed = new EmbedBuilder()
+						embed.setColor(0x800080);
 						embed.setTitle(`${user_name} a claim une photo de Nox!`);
 						embed.setTimestamp(Date.now());
-						embed.setImage(`attachment://pic.png`);
+						embed.setImage(`attachment://${selected.name}`);
 						embed.addFields(
 							{ name: "photos disponibles :", value: `${stats.total - stats.sent}` }
 						);
