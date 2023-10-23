@@ -25,9 +25,9 @@ module.exports = {
 		parse = 1;
 		tested = [];
 		return new Promise(async (resolve) => {
-			fs.readFile("./resources/nox.json", async function getPic(err, data) {
+			fs.readFile("./resources/nox.json", 'utf-8', async function getPic(err, data) {
 				try {
-					console.log(data);
+					console.log(JSON.parse(data));
 					if (parse)
 						var data = JSON.parse(data);
 					selected = data[[Math.floor(Math.random() * (Object.keys(data).length))]]

@@ -50,14 +50,17 @@ ws1.on('message', (msg) => {
                     rewards.sendReward('alt_tab').then(() => {
                         chat_bot.say(`${reward_obj.user_name} a demandé ${reward_obj.title} au peuple`);
                     })
+                    break ;
                 case "[VALO] Drop":
                     rewards.sendReward('drop').then(() => {
                         chat_bot.say(`${reward_obj.user_name} a demandé ${reward_obj.title} au peuple`)
                     })
+                    break ;
                 case "Nox":
                     require('./srcs/nox').sendPic(reward_obj.user_name).then(() => {
                         chat_bot.say(`${reward_obj.user_name} a claim une photo de Nox ! Elle est disponible sur discord : discord.neryss.pw`);
                     })
+                    break ;
             }
         }
         else if (parsed_msg.payload.subscription.type == "channel.update")
