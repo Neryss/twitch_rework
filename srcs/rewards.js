@@ -7,7 +7,7 @@ module.exports = {
                 method: "POST",
                 url: "http://192.168.1.82:3033/example",
                 data: {
-                    field: "alt_tab"
+                    field: reward
                 }
             }).then((res) => {
                 console.log(reward + " event sent")

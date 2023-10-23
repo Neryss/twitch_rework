@@ -1,7 +1,7 @@
 const fs = require("fs");
-const discord = require('discord.js');
-const { EmbedBuilder } = require('discord.js');
-const webhook = new Discord.WebhookClient({ url: "https://ptb.discord.com/api/webhooks/1164308728770740304/p2QUed-P2OvKD78aolkvxosgW2E9XGKV0_bodBkNkcmlQRvszPaS20uzNakTMRbD7Wz5" });
+const Discord = require('discord.js');
+const { EmbedBuilder, AttachmentBuilder } = require('discord.js');
+const webhook = new Discord.WebhookClient({ url: "https://ptb.discord.com/api/webhooks/1100603425772802099/Z06aGGHUEbN_KbF_WRpmOh9S5GwveUCmZos11T6m_2FbCpKoIbeReRu_wzl2fR_H-doR" });
 
 
 async function countStats(files) {
@@ -27,6 +27,7 @@ module.exports = {
 		return new Promise(async (resolve) => {
 			fs.readFile("./resources/nox.json", async function getPic(err, data) {
 				try {
+					console.log(data);
 					if (parse)
 						var data = JSON.parse(data);
 					selected = data[[Math.floor(Math.random() * (Object.keys(data).length))]]
@@ -36,7 +37,7 @@ module.exports = {
 						stats = await countStats(data);
 						// await require("../chat_bot").say(`Une photo de Nox a été claim par ${user_name}, disponible sur le Discord: discord.neryss.pw`);
 
-						const attachment = new discord.MessageAttachment(`./resources/photos/${selected.name}`, 'pic.png');
+						const attachment = new AttachmentBuilder(`./resources/photos/${selected.name}`, 'pic.png');
 						// const webhook = new discord.WebhookClient({ url: process.env["DISCORD_WEBHOOK_NOX"] });
 						// let embed = new discord.MessageEmbed();
 						const   embed = new EmbedBuilder();

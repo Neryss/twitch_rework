@@ -14,6 +14,7 @@ const   ws = new WebSocket("ws://localhost:8080/ws");
 const   cron = require('node-cron');
 const   twitch_ft = require('./srcs/twitch');
 const   chat_bot = require('./chat_bot');
+const   rewards = require('./srcs/rewards');
 
 cron.schedule('* * */2 * *', () => {
     if (app_token)
@@ -44,10 +45,18 @@ ws1.on('message', (msg) => {
             }
             console.log(event);
             switch (event.reward.title) {
-                case "test":
+                case "Alt+tab":
                     console.log(reward_obj);
-                    require('./srcs/rewards').sendReward('alt_tab').then(() => {
-                        chat_bot.say(`${reward_obj.user_name} has redeemed ${reward_obj.title}`);
+                    rewards.sendReward('alt_tab').then(() => {
+                        chat_bot.say(`${reward_obj.user_name} a demandé ${reward_obj.title} au peuple`);
+                    })
+                case "[VALO] Drop":
+                    rewards.sendReward('drop').then(() => {
+                        chat_bot.say(`${reward_obj.user_name} a demandé ${reward_obj.title} au peuple`)
+                    })
+                case "Nox":
+                    require('./srcs/nox').sendPic(reward_obj.user_name).then(() => {
+                        chat_bot.say(`${reward_obj.user_name} a claim une photo de Nox ! Elle est disponible sur discord : discord.neryss.pw`);
                     })
             }
         }
