@@ -1,7 +1,7 @@
 require('dotenv').config();
 const   Discord = require('discord.js');
 const   { EmbedBuilder } = require('discord.js');
-const   webhook = new Discord.WebhookClient({url: "https://ptb.discord.com/api/webhooks/1164308728770740304/p2QUed-P2OvKD78aolkvxosgW2E9XGKV0_bodBkNkcmlQRvszPaS20uzNakTMRbD7Wz5"});
+const   webhook = new Discord.WebhookClient({url: "https://ptb.discord.com/api/webhooks/900423981138579517/dNow5I47rDDDXb6c1K_VzbhqaSYq8vOgjfpuFQCSj3Iul6D1SvOt07DZT9uWmhJM1Qsq"});
 
 module.exports = {
     sendNotif: (user, app_token) => {
