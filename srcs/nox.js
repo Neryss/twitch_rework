@@ -1,7 +1,8 @@
+require('dotenv').config();
 const fs = require("fs");
 const Discord = require('discord.js');
 const { EmbedBuilder, AttachmentBuilder } = require('discord.js');
-const webhook = new Discord.WebhookClient({ url: "https://ptb.discord.com/api/webhooks/1100603425772802099/Z06aGGHUEbN_KbF_WRpmOh9S5GwveUCmZos11T6m_2FbCpKoIbeReRu_wzl2fR_H-doR" });
+const webhook = new Discord.WebhookClient({ url: process.env['DISCORD_NOX_WEBHOOK'] });
 
 async function countStats(files) {
 	var res = {
