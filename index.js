@@ -15,6 +15,7 @@ const   cron = require('node-cron');
 const   twitch_ft = require('./srcs/twitch');
 const   chat_bot = require('./chat_bot');
 const   rewards = require('./srcs/rewards');
+const   obs = require("./srcs/obs_sockets");
 
 cron.schedule('0 * * * *', () => {
     if (app_token)
@@ -63,6 +64,12 @@ ws1.on('message', (msg) => {
                 case "Nox":
                     require('./srcs/nox').sendPic(reward_obj.user_name).then(() => {
                         chat_bot.say(`${reward_obj.user_name} a claim une photo de Nox ! Elle est disponible sur discord : discord.neryss.pw`);
+                    })
+                    break ;
+                case "what?":
+                    console.log("What?");
+                    obs.trigger().then(() => {
+                        chat_bot.say(`${reward_obj.user_name} ???`);
                     })
                     break ;
             }
@@ -141,6 +148,7 @@ var server = app.listen(3000, () =>{
 let global_user;
 
 async function    main() {
+    await   obs.obsInit();
     setTimeout(() => {
         server.close(() => {
             console.log("Server closed");
@@ -148,10 +156,11 @@ async function    main() {
     }, 5000);
     const   user = await twitch_ft.get_user(app_token);
     global_user = user;
+    await   obs.trigger();
     await   twitch_ft.subscribe_to_event(user.data[0].id, "channel.follow", "2", twitch_message_id, app_token);
     await   twitch_ft.subscribe_to_event(user.data[0].id, "channel.update", "2", twitch_message_id, app_token);
     await   twitch_ft.subscribe_to_event(user.data[0].id, "stream.online", "1", twitch_message_id, app_token);
-    // await   twitch_ft.createCustomReward(user.data[0].id, app_token, "drop", 50);
+    // await   twitch_ft.createCustomReward(user.data[0].id, app_token, "what?", 50);
     await   twitch_ft.subscribe_to_event(user.data[0].id, "channel.channel_points_custom_reward_redemption.add", "1", twitch_message_id, app_token);
     await   chat_bot.setup();
 }
