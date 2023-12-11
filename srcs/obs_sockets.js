@@ -63,15 +63,14 @@ async function obsInit()
     })
 }
 
-
 async function meme() {
     // await   obs.call("SetCurrentProgramScene", {sceneName: "meme"});
     return new Promise(async (resolve) => {
         const scenes = await getScenes();
         const current = await getCurrentScene();
-        await setFilter(scenes, "meme", true);
-        await muteMic(true);
         await setScene("meme");
+        await muteMic(true);
+        await setFilter(scenes, "meme", true);
         await sleep(3000);
         await setScene(current);
         await muteMic(false);

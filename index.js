@@ -9,6 +9,7 @@ const   auth_url = `https://id.twitch.tv/oauth2/authorize?client_id=${process.en
 let     app_token;
 let     twitch_message_id;
 const   WebSocket = require('ws');
+const   memeServ = new WebSocket.Server({port: 6543});
 const   ws1 = new WebSocket("wss://eventsub.wss.twitch.tv/ws");
 // const   ws = new WebSocket("ws://localhost:8080/ws");
 const   cron = require('node-cron');
@@ -16,6 +17,22 @@ const   twitch_ft = require('./srcs/twitch');
 const   chat_bot = require('./chat_bot');
 const   rewards = require('./srcs/rewards');
 const   obs = require("./srcs/obs_sockets");
+
+memeServ.on('connection', (socket) => {
+    console.log("A user has connected")
+    memeServ.clients.forEach((client) => {
+        client.send("salut");
+    })
+})
+
+async function  sendInput(reward_obj) {
+    return new Promise((resolve) => {
+        memeServ.clients.forEach((client) => {
+            client.send(reward_obj.input);
+        })
+        resolve();
+    })
+}
 
 cron.schedule('0 * * * *', () => {
     if (app_token)
@@ -27,6 +44,12 @@ cron.schedule('0 * * * *', () => {
 });
 
 let   init = true;
+
+function sleep(ms) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
+}
 
 //  this one is for twitch legit websocket server
 ws1.on('message', (msg) => {
@@ -46,7 +69,8 @@ ws1.on('message', (msg) => {
             const   event = parsed_msg.payload.event;
             const   reward_obj = {
                 user_name: event.user_name,
-                title: event.reward.title
+                title: event.reward.title,
+                input: event.user_input
             }
             console.log(event);
             switch (event.reward.title) {
@@ -68,9 +92,12 @@ ws1.on('message', (msg) => {
                     break ;
                 case "what?":
                     console.log("What?");
-                    obs.trigger().then(() => {
-                        chat_bot.say(`${reward_obj.user_name} ???`);
-                    })
+                        sendInput(reward_obj).then(() => {
+                            obs.trigger().then(() => {
+                                chat_bot.say(`${reward_obj.user_name} ???`);
+                                console.log(reward_obj.input);
+                            });
+                        })
                     break ;
             }
         }
@@ -156,7 +183,6 @@ async function    main() {
     }, 5000);
     const   user = await twitch_ft.get_user(app_token);
     global_user = user;
-    await   obs.trigger();
     await   twitch_ft.subscribe_to_event(user.data[0].id, "channel.follow", "2", twitch_message_id, app_token);
     await   twitch_ft.subscribe_to_event(user.data[0].id, "channel.update", "2", twitch_message_id, app_token);
     await   twitch_ft.subscribe_to_event(user.data[0].id, "stream.online", "1", twitch_message_id, app_token);
